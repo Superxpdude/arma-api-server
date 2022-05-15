@@ -1,0 +1,4 @@
+fastapi>=0.78.0
+pylint>=2.13.9
+uvicorn[standard]>=0.17.6
+yapf>=0.32.0
