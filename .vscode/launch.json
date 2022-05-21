@@ -8,10 +8,10 @@
 			"name": "Start Server",
 			"type": "python",
 			"request": "launch",
-			"program": "${workspaceFolder}/arma-api/",
 			"cwd": "${workspaceFolder}",
 			"console": "integratedTerminal",
-			"subProcess": true
+			"subProcess": true,
+			"module": "arma_api"
 		}
 	]
 }
