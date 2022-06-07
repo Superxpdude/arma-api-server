@@ -1,4 +1,3 @@
-from .crud import *
-from .database import *
-from .models import *
+from .db.config import *
+from .db.models import *
 from .schemas import *

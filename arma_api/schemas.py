@@ -1,35 +1,41 @@
 from pydantic import BaseModel
+from datetime import datetime
 
 
-class ItemBase(BaseModel):
-	title: str
-	description: str | None = None
+class PlayerBase(BaseModel):
+	steam_id: str
+
+	class Config:
+		orm_mode = True
 
 
-class ItemCreate(ItemBase):
+class PlayerInput(PlayerBase):
 	pass
 
 
-class Item(ItemBase):
-	id: int
-	owner_id: int
+class Player(PlayerBase):
+	pings: int
+
+
+class MissionBase(BaseModel):
+	file_name: str
 
 	class Config:
 		orm_mode = True
 
 
-class UserBase(BaseModel):
-	email: str
+class MissionCreate(MissionBase):
+	pass
 
 
-class UserCreate(UserBase):
-	password: str
-
-
-class User(UserBase):
+class MissionCreateResponse(MissionBase):
 	id: int
-	is_active: bool
-	items: list[Item] = []
+	start_time: datetime
 
-	class Config:
-		orm_mode = True
+
+class Mission(MissionBase):
+	id: int
+	start_time: datetime
+	end_time: datetime | None
+	pings: int
+	players: list[Player]
