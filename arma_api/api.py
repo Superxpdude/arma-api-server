@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException, Request
-from sqlalchemy.orm import Session, selectinload
+from sqlalchemy.orm import Session
 from sqlalchemy.future import select
-from sqlalchemy.sql import func
 
 from datetime import datetime, timezone, timedelta
 
