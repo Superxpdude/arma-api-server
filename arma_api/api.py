@@ -1,4 +1,5 @@
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Request, Security, Depends
+from fastapi.security.api_key import APIKeyHeader, APIKey
 from sqlalchemy.orm import Session
 from sqlalchemy.future import select
 
@@ -9,7 +10,22 @@ from .db import models
 from . import schemas
 from .db.config import engine, async_session, Base
 
-app = FastAPI()
+API_KEY = "123456789"
+API_KEY_NAME = "X-Api-Token"
+
+api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
+
+
+async def check_api_key(api_key_header: str = Security(api_key_header)):
+	if api_key_header == API_KEY:
+		return api_key_header
+	else:
+		raise HTTPException(
+			status_code=403, detail="Could not validate API key"
+		)
+
+
+app = FastAPI(dependencies=[Depends(check_api_key)])
 
 active_players: list[models.Player] = []
 last_update_time: datetime = None
