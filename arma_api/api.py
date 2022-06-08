@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session, selectinload
 from sqlalchemy.future import select
 from sqlalchemy.sql import func
 
+from datetime import datetime, timezone, timedelta
+
 from .db import models
 
 from . import schemas
@@ -11,6 +13,7 @@ from .db.config import engine, async_session, Base
 app = FastAPI()
 
 active_players: list[models.Player] = []
+last_update_time: datetime = None
 
 
 @app.on_event("startup")
@@ -45,18 +48,14 @@ async def update_mission(mission_id: int, playerIDs: list[str]):
 
 		# Access this global variable to set our list of currently connected players
 		global active_players
+		global last_update_time
 
 		async with session.begin():
 
-			dbResult = await session.execute(
-				select(models.Mission
-						).where(models.Mission.id == mission_id
-								).options(selectinload(models.Mission.players))
+			dbMission: models.Mission = await session.get(
+				models.Mission, mission_id
 			)
-
-			try:
-				dbMission: models.Mission = dbResult.scalars().one()
-			except:
+			if dbMission is None:
 				raise HTTPException(
 					status_code=404,
 					detail=f"Mission with ID: {mission_id} could not be found"
@@ -79,6 +78,9 @@ async def update_mission(mission_id: int, playerIDs: list[str]):
 			for player in dbMission.players:
 				player: models.Player
 				active_players.append(player.steam_id)
+
+			# Increment our last updated time
+			last_update_time = datetime.now(tz=timezone.utc)
 
 			# Increment mission ping counter
 			dbMission.pings += 1
@@ -103,7 +105,9 @@ async def get_mission(mission_id: int):
 	async with async_session() as session:
 		session: Session
 
-		dbMission = await session.get(models.Mission, mission_id)
+		dbMission: models.Mission = await session.get(
+			models.Mission, mission_id
+		)
 
 		if dbMission is None:
 			raise HTTPException(
@@ -116,6 +120,18 @@ async def get_mission(mission_id: int):
 
 @app.get("/players")
 async def get_players():
+	global last_update_time
+	global active_players
+
+	# If it has been more than two minutes since the last update, clear our player list before returning
+	if (
+		(last_update_time is not None) and (
+			(last_update_time + timedelta(minutes=2)) <
+			datetime.now(tz=timezone.utc)
+		)
+	):
+		active_players = []
+
 	return active_players
 
 
@@ -125,7 +141,15 @@ async def delete_mission(mission_id: int):
 		session: Session
 
 		async with session.begin():
-			dbMission = await session.get(models.Mission, mission_id)
+			dbMission: models.Mission = await session.get(
+				models.Mission, mission_id
+			)
+			if dbMission is None:
+				raise HTTPException(
+					status_code=404,
+					detail=f"Mission with ID: {mission_id} could not be found"
+				)
+
 			await session.delete(dbMission)
 
 		return
