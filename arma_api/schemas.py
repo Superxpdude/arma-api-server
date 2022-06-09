@@ -17,6 +17,10 @@ class Player(PlayerBase):
 	pings: int
 
 
+class Players(BaseModel):
+	players: list[str]
+
+
 class MissionBase(BaseModel):
 	file_name: str
 

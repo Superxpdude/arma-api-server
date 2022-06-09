@@ -54,9 +54,11 @@ async def create_mission(mission: schemas.MissionCreate):
 
 
 @app.patch("/mission/{mission_id}", response_model=schemas.Mission)
-async def update_mission(mission_id: int, playerIDs: list[str]):
+async def update_mission(mission_id: int, playerSchema: schemas.Players):
 	async with async_session() as session:
 		session: Session
+
+		playerIDs = playerSchema.players
 
 		# Access this global variable to set our list of currently connected players
 		global active_players
