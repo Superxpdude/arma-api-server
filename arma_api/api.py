@@ -10,14 +10,18 @@ from .db import models
 from . import schemas
 from .db.config import engine, async_session, Base
 
-API_KEY = "123456789"
-API_KEY_NAME = "X-Api-Token"
+import configparser
+# Allow our config file to have no value so that we can use keys as API keys
+config = configparser.ConfigParser(allow_no_value=True)
+config.read("data/config.ini")
 
+# Set up our API key information
+API_KEY_NAME = "X-Api-Token"
 api_key_header = APIKeyHeader(name=API_KEY_NAME, auto_error=False)
 
 
 async def check_api_key(api_key_header: str = Security(api_key_header)):
-	if api_key_header == API_KEY:
+	if (api_key_header is not None) and (api_key_header in config["API_KEYS"]):
 		return api_key_header
 	else:
 		raise HTTPException(
@@ -35,13 +39,6 @@ last_update_time: datetime = None
 async def startup():
 	async with engine.begin() as conn:
 		await conn.run_sync(Base.metadata.create_all)
-
-
-@app.middleware("http")
-async def auth_check(request: Request, call_next):
-	response = await call_next(request)
-	print(response.headers)
-	return response
 
 
 @app.post(
