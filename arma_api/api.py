@@ -103,11 +103,13 @@ async def update_mission(mission_id: int, playerSchema: schemas.Players):
 
 
 @app.get("/missions", response_model=list[schemas.Mission])
-async def list_missions():
+async def list_missions(start_id: int = 0):
 	async with async_session() as session:
 		session: Session
 
-		dbResult = await session.execute(select(models.Mission))
+		dbResult = await session.execute(
+			select(models.Mission).where(models.Mission.id >= start_id)
+		)
 
 		missions = dbResult.scalars().all()
 
