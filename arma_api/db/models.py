@@ -33,7 +33,9 @@ class Mission(Base):
 	id = Column(Integer, primary_key=True)
 	file_name = Column(String)
 	start_time = Column(DateTime(timezone=True), default=utctime)
-	end_time = Column(DateTime(timezone=True), onupdate=utctime)
+	end_time = Column(
+		DateTime(timezone=True), default=utctime, onupdate=utctime
+	)
 	pings = Column(Integer, server_default="0")
 
 	players: list = relationship(
