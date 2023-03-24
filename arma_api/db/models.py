@@ -1,6 +1,5 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
-from sqlalchemy.orm import relationship
-from sqlalchemy.sql import func
+from sqlalchemy import ForeignKey
+from sqlalchemy.orm import relationship, Mapped, mapped_column
 
 from datetime import datetime, timezone
 
@@ -30,19 +29,21 @@ class Mission(Base):
 	"""
 	__tablename__ = "missions"
 
-	id = Column(Integer, primary_key=True)
-	file_name = Column(String)
-	start_time = Column(DateTime(timezone=True), default=utctime)
-	end_time = Column(
-		DateTime(timezone=True), default=utctime, onupdate=utctime
+	id: Mapped[int] = mapped_column(primary_key=True)
+	file_name: Mapped[str] = mapped_column()
+	start_time: Mapped[datetime] = mapped_column(default=utctime)
+	end_time: Mapped[datetime] = mapped_column(
+		default=utctime, onupdate=utctime
 	)
-	pings = Column(Integer, server_default="0")
+	pings: Mapped[int] = mapped_column(server_default="0")
 
-	players: list = relationship(
+	players: Mapped[list] = relationship(
 		"Player",
 		#cascade="save-update, merge, delete, delete-orphan",
 		back_populates="mission",
-		lazy="immediate"
+		lazy="immediate",
+		cascade="all, delete",
+		passive_deletes=True,
 	)
 
 	__mapper_args__ = {"eager_defaults": True}
@@ -62,12 +63,14 @@ class Player(Base):
 	"""
 	__tablename__ = "players"
 
-	id = Column(Integer, primary_key=True)
-	mission_id = Column(Integer, ForeignKey("missions.id", ondelete="CASCADE"))
-	steam_id = Column(String)
-	pings = Column(Integer, server_default="1")
+	id: Mapped[int] = mapped_column(primary_key=True)
+	mission_id: Mapped[int] = mapped_column(
+		ForeignKey("missions.id", ondelete="CASCADE")
+	)
+	steam_id: Mapped[str] = mapped_column()
+	pings: Mapped[int] = mapped_column(server_default="1")
 
-	mission: Mission = relationship(
+	mission: Mapped[Mission] = relationship(
 		"Mission",
 		back_populates="players",
 		uselist=False,

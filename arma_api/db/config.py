@@ -1,5 +1,8 @@
+from sqlalchemy import TIMESTAMP
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker, DeclarativeBase
+
+import datetime
 
 SQLALCHEMY_DATABASE_URL = "sqlite+aiosqlite:///./data/arma_api.sqlite3"
 
@@ -15,4 +18,6 @@ async_session = sessionmaker(
 	class_=AsyncSession,
 )
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+	type_annotation_map = {datetime.datetime: TIMESTAMP(timezone=True)}

@@ -1,5 +1,5 @@
 aiosqlite>=0.18.0
 fastapi>=0.95.0
 sqlalchemy[asyncio]>=2.0.7,<3.0
-hypercorn>=0.14.3
+uvicorn[standard]>=0.21.1
 yapf>=0.32.0
